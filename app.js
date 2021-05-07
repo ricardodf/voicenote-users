@@ -50,7 +50,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           password: hash
         }
         usersCollection.insertOne(newUser)
-          .then(result => res.status(201).send(result))
+          .then(result => res.status(201).send(newUser))
           .catch(error => res.status(400).send(error))
       });
     })
