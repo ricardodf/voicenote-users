@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - echo "Installing..."
+  pre_build:
+    commands:
+      - echo "Pre-build phase"
+      - npm install
+  build:
+    commands:
+      - echo "Building"
+  post_build:
+    commands:
+      - echo "Post Build"
+  
