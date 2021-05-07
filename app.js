@@ -29,11 +29,11 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           if(userFound) {
             bcrypt.compare(password, userFound.password, function(err, result) {
               if(result) res.status(200).send(userFound);
-              else res.status(403).send({ msg: "Invalid credentials"})
+              else res.send({ msg: "Invalid credentials"})
             });
           }
           else {
-            res.status(404).send({ msg: `User not found with email: ${email}`})
+            res.send({ msg: `User not found with email: ${email}`})
           }
         })
         .catch(error => res.status(400).send(error))
