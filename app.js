@@ -21,7 +21,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
     const db = client.db('vn-users');
     const usersCollection = db.collection('users');
 
-    app.get('/users/userByEmail/', (req, res) => {
+    app.post('/users/userByEmail/', (req, res) => {
       const { email, password } = req.body;
       
       usersCollection.findOne({ email })
