@@ -10,6 +10,8 @@ require("dotenv").config();
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
+const jwt = require('jsonwebtoken');
+
 app.use(cors());
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
@@ -28,7 +30,13 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
         .then(userFound => {
           if(userFound) {
             bcrypt.compare(password, userFound.password, function(err, result) {
-              if(result) res.status(200).send(userFound);
+              if(result) {
+                const token = jwt.sign({id: userFound.id}, "supersecret")
+                res.status(200).send({
+                  userFound,
+                  token
+                })
+              }
               else res.send({ msg: "Invalid credentials"})
             });
           }
@@ -50,7 +58,13 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           password: hash
         }
         usersCollection.insertOne(newUser)
-          .then(result => res.status(201).send(newUser))
+          .then(result => {
+            const token = jwt.sign({id: userFound.id}, "supersecret")
+            res.status(201).send({
+              newUser,
+              token
+            })
+          })
           .catch(error => res.status(400).send(error))
       });
     })
