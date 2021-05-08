@@ -61,7 +61,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           .then(result => {
             const token = jwt.sign({id: newUser.id}, "supersecret")
             res.status(201).send({
-              newUser,
+              user: newUser,
               token
             })
           })
