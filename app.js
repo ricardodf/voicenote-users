@@ -59,7 +59,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
         }
         usersCollection.insertOne(newUser)
           .then(result => {
-            const token = jwt.sign({id: userFound.id}, "supersecret")
+            const token = jwt.sign({id: newUser.id}, "supersecret")
             res.status(201).send({
               newUser,
               token
