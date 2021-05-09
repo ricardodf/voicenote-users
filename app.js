@@ -1,6 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
 
-const { Storage } = require('@google-cloud/storage');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -16,14 +15,6 @@ const jwt = require('jsonwebtoken');
 app.use(cors());
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-
-const storage = new Storage();
-const bucketName = 'voice-note-io-audios'
-async function uploadFile(filePath) {
-  return await storage.bucket(bucketName).upload(filePath, {
-    destination: 'test-1',
-  });
-}
 
 MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: true })
   .then(client => {
@@ -107,12 +98,6 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           res.status(201).send(newNote)
         })
         .catch(error => res.status(400).send(error))
-    })
-
-    app.post('/audios/new', (req, res) => {
-      uploadFile(req.body.data)
-        .then( (res) => console.log(res))
-        .catch( (err) => console.log(err))
     })
 
   })
