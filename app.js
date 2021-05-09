@@ -55,7 +55,8 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           id: id,
           name: name,
           email: email,
-          password: hash
+          password: hash,
+          audios: 0
         }
         usersCollection.insertOne(newUser)
           .then(result => {
