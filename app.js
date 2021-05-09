@@ -1,8 +1,8 @@
 const MongoClient = require("mongodb").MongoClient;
+const {Storage} = require('@google-cloud/storage');
 
-const { Storage } = require('@google-cloud/storage');
-const mm = require('music-metadata');
-const util = require('util');
+const {format} = require('util');
+const Multer = require('multer');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -21,11 +21,14 @@ app.use(bodyParser.json());
 
 const storage = new Storage();
 const bucketName = 'voice-note-io-audios'
-async function uploadFile(filePath) {
-  return await storage.bucket(bucketName).upload(filePath, {
-    destination: 'test-1',
-  });
-}
+const bucket = storage.bucket(bucketName);
+const multer = Multer({
+  storage: Multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // no larger than 5mb, you can change as needed.
+  },
+});
+
 
 MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: true })
   .then(client => {
@@ -111,17 +114,31 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
         .catch(error => res.status(400).send(error))
     })
 
-    app.post('/audios/new', async (req, res) => {
-      try {
-        const metadata = await mm.parseStream(req.body.audio, {mimeType: 'audio/flac', size: req.body.size});
-        console.log(metadata);
-        uploadFile(metadata)
-          .then( (res) => console.log(res))
-          .catch( (err) => console.log(err))
-      } catch (error) {
-        console.error(error.message);
+    app.post('/audios/new', multer.single('file'), (req, res, next) => {
+      if (!req.file) {
+        res.status(400).send('No file uploaded.');
+        return;
       }
-    })
+    
+      // Create a new blob in the bucket and upload the file data.
+      const blob = bucket.file("test-ricardo");
+      const blobStream = blob.createWriteStream();
+    
+      blobStream.on('error', err => {
+        next(err);
+      });
+    
+      blobStream.on('finish', () => {
+        // The public URL can be used to directly access the file via HTTP.
+        const publicUrl = format(
+          `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+        );
+        res.status(200).send(publicUrl);
+      });
+    
+      blobStream.end(req.file.buffer);
+    });
+    
 
   })
   .catch(error => console.error(error))
