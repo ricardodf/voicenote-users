@@ -1,6 +1,8 @@
 const MongoClient = require("mongodb").MongoClient;
 
 const { Storage } = require('@google-cloud/storage');
+const mm = require('music-metadata');
+const util = require('util');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -109,10 +111,16 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
         .catch(error => res.status(400).send(error))
     })
 
-    app.post('/audios/new', (req, res) => {
-      uploadFile(req.body.data)
-        .then( (res) => console.log(res))
-        .catch( (err) => console.log(err))
+    app.post('/audios/new', async (req, res) => {
+      try {
+        const metadata = await mm.parseStream(req.body.audio, {mimeType: 'audio/flac', size: req.body.size});
+        console.log(metadata);
+        uploadFile(metadata)
+          .then( (res) => console.log(res))
+          .catch( (err) => console.log(err))
+      } catch (error) {
+        console.error(error.message);
+      }
     })
 
   })
