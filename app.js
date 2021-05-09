@@ -1,8 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
-const {Storage} = require('@google-cloud/storage');
 
-const {format} = require('util');
-const Multer = require('multer');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -18,16 +15,6 @@ const jwt = require('jsonwebtoken');
 app.use(cors());
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-
-const storage = new Storage();
-const bucketName = 'voice-note-io-audios'
-const bucket = storage.bucket(bucketName);
-const multer = Multer({
-  storage: Multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // no larger than 5mb, you can change as needed.
-  },
-});
 
 
 MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: true })
@@ -113,33 +100,16 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
         })
         .catch(error => res.status(400).send(error))
     })
-
-    app.post('/audios/new', multer.single('file'), (req, res, next) => {
-      if (!req.file) {
-        res.status(400).send('No file uploaded.');
-        return;
-      }
     
-      // Create a new blob in the bucket and upload the file data.
-      const blob = bucket.file("test-ricardo");
-      const blobStream = blob.createWriteStream();
-    
-      blobStream.on('error', err => {
-        next(err);
-      });
-    
-      blobStream.on('finish', () => {
-        // The public URL can be used to directly access the file via HTTP.
-        const publicUrl = format(
-          `https://storage.googleapis.com/${bucket.name}/${blob.name}`
-        );
-        res.status(200).send(publicUrl);
-      });
-    
-      blobStream.end(req.file.buffer);
-    });
-    
-
+    app.put('/users/cnt', (req, res) => {
+      const { id, newCnt } = req.body;
+      
+      usersCollection.findOneAndUpdate({ id }, {$set: { "audios": newCnt }})
+        .then(userUpdated => {
+                res.status(200).send({userUpdated})
+            })
+        .catch(error => res.status(400).send(error))
+    })
   })
   .catch(error => console.error(error))
 
