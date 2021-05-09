@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js ./token.json"
   },
   "author": "",
   "license": "ISC",
