@@ -74,7 +74,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
     app.post('/notes/userid', (req, res) => {
       const { userId } = req.body;
 
-      notesCollection.find({ userId })
+      notesCollection.find({ userId }).toArray()
         .then(userNotes => {
           if(userNotes)
             res.status(200).send(userNotes)
@@ -86,7 +86,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
 
     app.post('/notes/new', (req, res) => {
       const { userId, id, title, text } = req.body;
-      
+
       const newNote = {
         userId: userId,
         id: id,
