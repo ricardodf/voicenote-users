@@ -22,6 +22,7 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
 
     const db = client.db('vn-users');
     const usersCollection = db.collection('users');
+    const notesCollection = db.collection('notes');
 
     app.post('/users/userByEmail/', (req, res) => {
       const { email, password } = req.body;
@@ -68,6 +69,35 @@ MongoClient.connect(process.env.MONGODB_CONNECTION_STR, { useUnifiedTopology: tr
           })
           .catch(error => res.status(400).send(error))
       });
+    })
+
+    app.post('/notes/userid', (req, res) => {
+      const { userId } = req.body;
+
+      notesCollection.find({ userId })
+        .then(userNotes => {
+          if(userNotes)
+            res.status(200).send(userNotes)
+          else
+            res.send({ msg: `No notes found with userId: ${userId}`})
+        })
+        .catch(error => res.status(400).send(error))
+    })
+
+    app.post('/notes/new', (req, res) => {
+      const { userId, id, title, text } = req.body;
+      
+      const newNote = {
+        userId: userId,
+        id: id,
+        title: title,
+        text: text
+      }
+      notesCollection.insertOne(newNote)
+        .then(result => {
+          res.status(201).send(newNote)
+        })
+        .catch(error => res.status(400).send(error))
     })
 
   })
